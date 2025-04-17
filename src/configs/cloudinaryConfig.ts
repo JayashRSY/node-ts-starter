@@ -2,13 +2,10 @@
 // import stream from 'stream';
 // import { v2 as cloudinary } from 'cloudinary';
 // import streamifier from 'streamifier';
-// import { fileURLToPath } from 'url';
-// import path from 'path';
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.resolve(path.dirname(__filename), '../');
-// const KEYFILEPATH = path.join(__dirname, "../cred.json");
+// import { join } from 'path';
+// const KEYFILEPATH = join(__dirname, "../cred.json");
 
-// export const uploadToCloudinary = async (file) => {
+// const uploadToCloudinary = async (file) => {
 //     try {
 //         cloudinary.config({
 //             cloud_name: process.env.CD_NAME,
@@ -23,3 +20,5 @@
 //         throw err;
 //     }
 // }
+
+// export default { uploadToCloudinary }; 

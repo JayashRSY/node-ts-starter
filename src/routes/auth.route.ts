@@ -1,18 +1,17 @@
 import express from 'express';
-const router = express.Router();
-import loginLimiter from '../middlewares/loginLimiter.ts';
-import {
-    signup,
-    signin,
-    google,
-    signout,
-    refresh,
+import {register, 
+    login, 
+    refresh, 
+    logout, 
+    gmailLogin
 } from '../controllers/auth.controller.ts';
 
-router.post('/signup', signup);
-router.post('/signin', loginLimiter, signin);
-router.post('/google', google);
-router.post('/signout', signout);
-router.get('/refresh', refresh);
+const router = express.Router();
+
+router.post('/register', register);
+router.post('/login', login);
+router.post('/refresh-token', refresh);
+router.post('/logout', logout);
+router.post('/gmail-login', gmailLogin);
 
 export default router;

@@ -14,7 +14,9 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction): vo
     }
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as string, (err: any, decoded: any) => {
-        if (err) return res.status(403).json({ message: 'Forbidden' })
+        if (err) {
+          return res.status(403).json({ message: 'Forbidden' })
+        }
         // Ensure the decoded token is of the expected type
         if (decoded) {
             req.user = decoded as UserPayload;

@@ -10,16 +10,16 @@ import httpStatus from 'http-status';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import corsOptions from './configs/cors.config.ts';
+import { config } from './configs/config.ts';
 import connectDB from './utils/mongo.ts';
 // import { logger } from './middlewares/logger.ts';
 import errorHandler from './middlewares/errorHandler.ts';
 import authRoutes from './routes/auth.route.ts'
 import userRoutes from './routes/user.route.ts'
-
-
+import rateLimit from 'express-rate-limit';
 
 dotenv.config({ path: './.env' });
-
+const { PORT } = process.env;
 
 const app = express();
 
@@ -39,9 +39,18 @@ app.use(helmet());
 app.use(mongoSanitize());
 // gzip compression
 app.use(compression());
+// Serve static files from the 'public' directory
+app.use(morgan('combined'));
 
-
-
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again after 15 minutes',
+  });
+  app.use(limiter);
+  
+// API Versioning
+const apiVersion = `/api/v${config.app.apiVersion}`;
 
 // jwt authentication
 
@@ -51,11 +60,11 @@ app.use(compression());
 // }
 
 // Routes
-app.use('/status', async (req, res, next) => {
-    res.status(200).send({ message: "Server is up and running" })
-})
-app.use("/api/auth", authRoutes);
-app.use("/api/user", userRoutes);
+app.use(`${apiVersion}/health`, async (req, res, next) => {
+    res.status(200).send({ message: "Server is up and running" });
+});
+app.use(`${apiVersion}/auth`, authRoutes);
+app.use(`${apiVersion}/user`, userRoutes);
 
 // Error Handling Middleware
 // app.use((err: any, req: Request, res: Response, next: NextFunction) => {
@@ -69,6 +78,6 @@ app.use("/api/user", userRoutes);
 // });
 app.use(errorHandler)
 
-app.listen(3000, () => {
-    console.log("Server is running on port 3000");
-});
+app.listen(PORT, () => {
+    console.log(`Server is running on port: ${PORT}`);
+}); 
