@@ -21,7 +21,7 @@ export const register = catchAsync(async (
         .json({ success: false, message: "Email and password are required" });
       return;
     }
-    const hashedPassword = bcrypt.hash(password, 12); // hashSync is synchronous
+    const hashedPassword = await bcrypt.hash(password, 12); // hashSync is synchronous
     const existingUser = await UserModel.findOne({ email }).lean();
     if (existingUser) {
       res
@@ -125,7 +125,7 @@ export const gmailLogin = async (
       const generatedPassword =
         Math.random().toString(36).slice(-8) +
         Math.random().toString(36).slice(-8);
-      const hashedPassword = bcrypt.hash(generatedPassword, 12);
+      const hashedPassword = await bcrypt.hash(generatedPassword, 12);
       const newUser = new UserModel({
         name: displayName,
         email,
