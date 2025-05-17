@@ -11,11 +11,29 @@ export const getUsers = catchAsync(async (req: Request, res: Response) => {
     });
   }
 
-  const allUsers = await UserModel.find({}, 'name email profilePicture role updatedAt createdAt').lean();
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const skip = (page - 1) * limit;
+  
+  const allUsers = await UserModel.find({}, 'name email profilePicture role updatedAt createdAt')
+    .skip(skip)
+    .limit(limit)
+    .lean();
+    
+  const total = await UserModel.countDocuments({});
+  
   return res.status(httpStatus.OK).json({
     success: true,
     message: "Users fetched successfully",
-    data: allUsers,
+    data: {
+      users: allUsers,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit)
+      }
+    },
   });
 });
 

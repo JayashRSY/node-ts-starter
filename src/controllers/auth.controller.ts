@@ -42,45 +42,43 @@ export const register = catchAsync(async (
     return
 });
 
-export const login = async (
+export const login = catchAsync(async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  try {
-    const { email, password } = req.body;
-    // Validate the request body
-    if (!email || !password) {
-      res
-        .status(httpStatus.NOT_FOUND)
-        .json({ success: false, message: "Email and password are required" });
-      return;
-    }
-    const validUser = await UserModel.findOne({ email }).exec();
-    if (!validUser) {
-      res.status(httpStatus.NOT_FOUND).json({ success: false, message: "User not found" });
-      return;
-    }
-    const validPassword = bcrypt.compare(password, validUser.password);
-    if (!validPassword) {
-      res.status(httpStatus.UNAUTHORIZED).json({ success: false, message: "Invalid password" });
-      return;
-    }
-    const tokens = await generateAuthTokens(validUser);
-
+  const { email, password } = req.body;
+  // Validate the request body
+  if (!email || !password) {
     res
-      .cookie("refreshToken", tokens.refresh.token, cookieConfig as any)
-      .status(httpStatus.OK)
-      .json({
-        success: true,
-        message: "User logged in successfully",
-        accessToken: tokens.access.token,
-        data: validUser,
-      });
-  } catch (error) {
-    next(error);
+      .status(httpStatus.NOT_FOUND)
+      .json({ success: false, message: "Email and password are required" });
+    return;
   }
-};
+  const validUser = await UserModel.findOne({ email }).exec();
+  if (!validUser) {
+    res.status(httpStatus.NOT_FOUND).json({ success: false, message: "User not found" });
+    return;
+  }
+  
+  // Fix: Add await
+  const validPassword = await bcrypt.compare(password, validUser.password);
+  if (!validPassword) {
+    res.status(httpStatus.UNAUTHORIZED).json({ success: false, message: "Invalid password" });
+    return;
+  }
+  const tokens = await generateAuthTokens(validUser);
+
+  res
+    .cookie("refreshToken", tokens.refresh.token, cookieConfig as any)
+    .status(httpStatus.OK)
+    .json({
+      success: true,
+      message: "User logged in successfully",
+      accessToken: tokens.access.token,
+      data: validUser,
+    });
+});
 
 export const gmailLogin = async (
   req: Request,

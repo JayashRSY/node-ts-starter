@@ -5,7 +5,12 @@ import { config } from "../configs/config.ts";
 import { tokenTypes } from "./constants.ts";
 import Token from "../models/token.model.ts";
 
-export const generateToken = async (userId: any, expires: any, type: any, secret = config.jwt.secret) => {
+export const generateToken = async (
+  userId: string,
+  expires: moment.Moment,
+  type: string,
+  secret: string = config.jwt.secret
+): Promise<string> => {
   const payload = {
     sub: userId,
     iat: moment().unix(),
@@ -63,7 +68,13 @@ export const generateResetPasswordToken = async (user: any) => {
   return resetPasswordToken;
 };
 
-export const saveToken = async (token: any, userId: any, expires: any, type: any, blacklisted = false) => {
+export const saveToken = async (
+  token: string,
+  userId: string,
+  expires: moment.Moment,
+  type: string,
+  blacklisted: boolean = false
+) => {
   try {
     return await Token.create({
       token,
