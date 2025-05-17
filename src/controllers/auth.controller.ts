@@ -7,8 +7,9 @@ import UserModel from "../models/user.model.ts";
 import cookieConfig from "../configs/cookie.config.ts";
 import catchAsync from "../utils/catchAsync.ts";
 import { generateAuthTokens } from "../services/token.service.ts";
-import { generateResetToken, hashResetToken, sendResetEmail } from '../utils/passwordReset.ts';
+import { generateResetToken, hashResetToken } from '../utils/passwordReset.ts';
 import { config } from '../configs/config.ts';
+import { sendSimpleEmail } from '../utils/email.ts';
 
 export const register = catchAsync(async (
   req: Request,
@@ -23,7 +24,6 @@ export const register = catchAsync(async (
         .json({ success: false, message: "Email and password are required" });
       return;
     }
-    const hashedPassword = await bcrypt.hash(password, 12); // hashSync is synchronous
     const existingUser = await UserModel.findOne({ email }).lean();
     if (existingUser) {
       res
@@ -33,7 +33,7 @@ export const register = catchAsync(async (
     }
     const newUser = await UserModel.create({
       email,
-      password: hashedPassword,
+      password: password,
     });
     const tokens = await generateAuthTokens(newUser);
 
@@ -63,8 +63,8 @@ export const login = catchAsync(async (
     return;
   }
   
-  // Fix: Add await
-  const validPassword = await bcrypt.compare(password, validUser.password);
+  // Use the model method instead of direct bcrypt.compare
+  const validPassword = await validUser.isPasswordMatch(password);
   if (!validPassword) {
     res.status(httpStatus.UNAUTHORIZED).json({ success: false, message: "Invalid password" });
     return;
@@ -125,11 +125,10 @@ export const gmailLogin = async (
       const generatedPassword =
         Math.random().toString(36).slice(-8) +
         Math.random().toString(36).slice(-8);
-      const hashedPassword = await bcrypt.hash(generatedPassword, 12);
       const newUser = new UserModel({
         name: displayName,
         email,
-        password: hashedPassword,
+        password: generatedPassword,
         profilePicture: photoURL,
         role: "user",
       });
@@ -261,9 +260,18 @@ export const forgotPassword = catchAsync(async (
   // Create reset URL
   const resetUrl = `${config.app.frontendUrl}/reset-password?token=${resetToken}`;
   
+  // Create HTML content for email
+  const htmlContent = `
+    <h1>Password Reset</h1>
+    <p>You requested a password reset. Click the button below to reset your password:</p>
+    <a href="${resetUrl}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
+    <p>If you didn't request this, please ignore this email.</p>
+    <p>This link will expire in 15 minutes.</p>
+  `;
+  
   // Send email with reset link
   try {
-    await sendResetEmail(user.email, resetUrl);
+    await sendSimpleEmail(user.email, 'Reset Your Password', htmlContent);
     
     res.status(httpStatus.OK).json({
       success: true,

@@ -16,6 +16,7 @@ export const config = {
     isProduction: process.env.NODE_ENV === "production",
     apiVersion: process.env.API_VERSION || '1',
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+    name: process.env.APP_NAME || 'Node TS Starter',
   },
   mongoose: {
     url: process.env.MONGODB_URL || "mongodb://localhost:27017/your-database",
@@ -61,5 +62,10 @@ export const config = {
     maxAge: 600, // Cache preflight requests for 10 minutes
     credentials: true,
     optionsSuccessStatus: 200,
+  },
+  email: {
+    user: process.env.BREVO_USER,
+    smtpKey: process.env.BREVO_SMTP_KEY,
+    defaultFrom: process.env.EMAIL_FROM || 'noreply@example.com',
   },
 };

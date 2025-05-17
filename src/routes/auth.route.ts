@@ -19,13 +19,15 @@ import {
 const router = express.Router();
 
 // router.post('/register', validate(registerValidation), register);
-router.post('/login', validate(loginValidation), login);
 router.post('/register', register);
+// router.post('/login', validate(loginValidation), login);
 router.post('/login', login);
 router.post('/refresh-token', refresh);
 router.post('/logout', logout);
 router.post('/gmail-login', gmailLogin);
-router.post('/forgot-password', validate(forgotPasswordValidation), forgotPassword);
-router.post('/reset-password', validate(resetPasswordValidation), resetPassword);
+// router.post('/forgot-password', validate(forgotPasswordValidation), forgotPassword);
+router.post('/forgot-password', forgotPassword);
+// router.post('/reset-password', validate(resetPasswordValidation), resetPassword);
+router.post('/reset-password', resetPassword);
 
 export default router;

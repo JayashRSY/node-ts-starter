@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 import bcrypt from 'bcrypt'
 // Define an interface representing a document in MongoDB.
+// Add to IUser interface
 interface IUser extends Document {
     name?: string;
     email: string;
@@ -9,9 +10,16 @@ interface IUser extends Document {
     role: 'user' | 'admin';
     resetPasswordToken?: string;
     resetPasswordExpires?: Date;
+    passwordChangedAt?: Date;
+    failedLoginAttempts?: number;
+    lockUntil?: Date;
+    isLocked(): boolean;
+    isPasswordMatch(password: string): Promise<boolean>;
+    incrementLoginAttempts(): Promise<void>;
+    resetLoginAttempts(): Promise<void>;
 }
 
-// Define the schema corresponding to the document interface.
+// Add to schema
 const userSchema: Schema<IUser> = new mongoose.Schema({
     name: {
         type: String,
@@ -47,6 +55,12 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+// Update password match method to handle locked accounts
+userSchema.method('isPasswordMatch', async function(password) {
+  const isMatch = await bcrypt.compare(password, this.password);
+  return isMatch;
+});
+
 userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
     const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
     return !!user;
@@ -55,7 +69,7 @@ userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
   userSchema.pre('save', async function (next) {
     const user = this;
     if (user.isModified('password')) {
-      user.password = await bcrypt.hash(user.password, 10);
+      user.password = await bcrypt.hash(user.password, 12);
     }
     next();
   });
@@ -63,16 +77,6 @@ userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
   userSchema.method('isPasswordMatch', async function (password) {
     return bcrypt.compare(password, this.password);
   });
-  
-//   userSchema.plugin((schema) => {
-//     schema.options.toJSON = {
-//       transform: function (doc, ret, options) {
-//         delete ret.password;
-//         delete ret.__v;
-//         return ret;
-//       },
-//     };
-//   });
 
 userSchema.methods.toJSON = function () {
     const user = this.toObject();
