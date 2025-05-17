@@ -4,7 +4,7 @@ import {
   login, 
   refresh, 
   logout, 
-  gmailLogin, 
+  google, 
   forgotPassword, 
   resetPassword 
 } from '../controllers/auth.controller.ts';
@@ -24,7 +24,7 @@ router.post('/register', register);
 router.post('/login', login);
 router.post('/refresh-token', refresh);
 router.post('/logout', logout);
-router.post('/gmail-login', gmailLogin);
+router.post('/google', google);
 // router.post('/forgot-password', validate(forgotPasswordValidation), forgotPassword);
 router.post('/forgot-password', forgotPassword);
 // router.post('/reset-password', validate(resetPasswordValidation), resetPassword);

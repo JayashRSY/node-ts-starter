@@ -82,7 +82,7 @@ export const login = catchAsync(async (
     });
 });
 
-export const gmailLogin = async (
+export const google = async (
   req: Request,
   res: Response,
   next: NextFunction
