@@ -6,7 +6,7 @@ import { OAuth2Client } from "google-auth-library";
 import UserModel from "../models/user.model.ts";
 import cookieConfig from "../configs/cookie.config.ts";
 import catchAsync from "../utils/catchAsync.ts";
-import { generateAuthTokens } from "../utils/token.service.ts";
+import { generateAuthTokens } from "../services/token.service.ts";
 
 export const register = catchAsync(async (
   req: Request,

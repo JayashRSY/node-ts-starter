@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import moment from "moment";
 import httpStatus from "http-status";
 import { config } from "../configs/config.ts";
-import { tokenTypes } from "./constants.ts";
+import { tokenTypes } from "../utils/constants.ts";
 import Token from "../models/token.model.ts";
 
 export const generateToken = async (

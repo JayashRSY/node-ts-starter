@@ -1,5 +1,5 @@
 import UserModel from "../models/user.model.ts";
-import { generateAuthTokens } from "../utils/token.service.ts";
+import { generateAuthTokens } from "./token.service.ts";
 import bcrypt from "bcrypt";
 import ApiError from "../utils/ApiError.ts";
 import httpStatus from "http-status";
