@@ -7,6 +7,8 @@ import UserModel from "../models/user.model.ts";
 import cookieConfig from "../configs/cookie.config.ts";
 import catchAsync from "../utils/catchAsync.ts";
 import { generateAuthTokens } from "../services/token.service.ts";
+import { generateResetToken, hashResetToken, sendResetEmail } from '../utils/passwordReset.ts';
+import { config } from '../configs/config.ts';
 
 export const register = catchAsync(async (
   req: Request,
@@ -224,3 +226,96 @@ export const logout = (
     .status(httpStatus.OK)
     .json({ success: true, message: "Signed out successfully" });
 };
+
+/**
+ * Handle forgot password request
+ * @route POST /auth/forgot-password
+ */
+export const forgotPassword = catchAsync(async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { email } = req.body;
+  
+  // Find user by email
+  const user = await UserModel.findOne({ email });
+  if (!user) {
+    // For security reasons, don't reveal that the email doesn't exist
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "If your email is registered, you will receive a password reset link"
+    });
+    return;
+  }
+  
+  // Generate reset token
+  const resetToken = generateResetToken();
+  const hashedToken = hashResetToken(resetToken);
+  
+  // Save token to user document with expiry time (15 minutes)
+  user.resetPasswordToken = hashedToken;
+  user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+  await user.save();
+  
+  // Create reset URL
+  const resetUrl = `${config.app.frontendUrl}/reset-password?token=${resetToken}`;
+  
+  // Send email with reset link
+  try {
+    await sendResetEmail(user.email, resetUrl);
+    
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "If your email is registered, you will receive a password reset link"
+    });
+  } catch (error) {
+    // If email sending fails, clear the reset token fields
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+    
+    next(error);
+  }
+});
+
+/**
+ * Handle password reset request
+ * @route POST /auth/reset-password
+ */
+export const resetPassword = catchAsync(async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { token, password } = req.body;
+  
+  // Hash the provided token to compare with stored hash
+  const hashedToken = hashResetToken(token);
+  
+  // Find user with matching token and valid expiry
+  const user = await UserModel.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpires: { $gt: new Date() }
+  });
+  
+  if (!user) {
+    res.status(httpStatus.BAD_REQUEST).json({
+      success: false,
+      message: "Invalid or expired password reset token"
+    });
+    return;
+  }
+  
+  // Update password and clear reset token fields
+  user.password = password; // Password will be hashed by pre-save hook
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+  await user.save();
+  
+  // Send confirmation response
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: "Password has been reset successfully"
+  });
+});

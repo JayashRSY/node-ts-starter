@@ -14,7 +14,8 @@ export const config = {
     port: process.env.PORT || 3000,
     nodeEnv: process.env.NODE_ENV || "development",
     isProduction: process.env.NODE_ENV === "production",
-    apiVersion: process.env.API_VERSION || '1'
+    apiVersion: process.env.API_VERSION || '1',
+    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   },
   mongoose: {
     url: process.env.MONGODB_URL || "mongodb://localhost:27017/your-database",

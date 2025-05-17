@@ -7,6 +7,8 @@ interface IUser extends Document {
     password: string;
     profilePicture?: string;
     role: 'user' | 'admin';
+    resetPasswordToken?: string;
+    resetPasswordExpires?: Date;
 }
 
 // Define the schema corresponding to the document interface.
@@ -21,7 +23,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
         unique: true,
         trim: true,
         lowercase: true,
-        match: [/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/, 'Please fill a valid email address'],
+        match: [/^[\w-]+(\.\w+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/, 'Please fill a valid email address'],
     },
     password: {
       type: String,
@@ -36,6 +38,12 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     },
     profilePicture: {
         type: String,
+    },
+    resetPasswordToken: {
+        type: String,
+    },
+    resetPasswordExpires: {
+        type: Date,
     }
 }, { timestamps: true });
 
