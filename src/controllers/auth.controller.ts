@@ -78,7 +78,7 @@ export const login = catchAsync(async (
       success: true,
       message: "User logged in successfully",
       accessToken: tokens.access.token,
-      data: validUser,
+      user: validUser,
     });
 });
 
@@ -119,7 +119,7 @@ export const google = async (
           success: true,
           message: "User logged in successfully",
           accessToken: tokens.access.token,
-          data: user,
+          user,
         });
     } else {
       const generatedPassword =
@@ -195,9 +195,8 @@ export const refresh = (
         .status(httpStatus.OK)
         .json({
           success: true,
-          message: "User logged in successfully",
+          message: "Refresh token updated successfully",
           accessToken: tokens.access.token,
-          data: validUser,
         });
     }
   );
