@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import cookieParser from "cookie-parser";
 import cors, { CorsOptions } from 'cors';
 import morgan from "morgan";
@@ -6,16 +6,13 @@ import helmet from "helmet";
 import dotenv from 'dotenv';
 import mongoSanitize from 'express-mongo-sanitize';
 import compression from 'compression';
-import httpStatus from 'http-status';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { config } from './configs/config.ts';
 import connectDB from './utils/mongo.ts';
-// import { logger } from './middlewares/logger.ts';
 import authRoutes from './routes/auth.route.ts'
 import userRoutes from './routes/user.route.ts'
-import rateLimit from 'express-rate-limit';
+import cardRoutes from './routes/card.route.ts'
 import errorMiddleware from './middlewares/error.middleware.ts';
+import loginLimiter from './middlewares/limiter.middleware.ts';
 
 dotenv.config({ path: './.env' });
 const { PORT } = process.env;
@@ -40,23 +37,14 @@ app.use(mongoSanitize());
 app.use(compression());
 // Serve static files from the 'public' directory
 app.use(morgan('combined'));
-
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-    message: 'Too many requests from this IP, please try again after 15 minutes',
-  });
-  app.use(limiter);
   
 // API Versioning
 const apiVersion = `/api/v${config.app.apiVersion}`;
 
-// jwt authentication
-
 // limit repeated failed requests to auth endpoints
-// if (process.env.ENV === 'production') {
-//     app.use('/api/auth', authLimiter);
-// }
+if (process.env.ENV === 'production') {
+    app.use('/api/auth', loginLimiter);
+}
 
 // Routes
 app.use(`${apiVersion}/health`, async (req, res, next) => {
@@ -64,17 +52,9 @@ app.use(`${apiVersion}/health`, async (req, res, next) => {
 });
 app.use(`${apiVersion}/auth`, authRoutes);
 app.use(`${apiVersion}/user`, userRoutes);
+app.use(`${apiVersion}/card`, cardRoutes);
 
 // Error Handling Middleware
-// app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-//     const statusCode = err.statusCode || 500;
-//     const message = err.message || 'Internal Server Error';
-//     return res.status(statusCode).json({
-//         success: false,
-//         message,
-//         statusCode
-//     });
-// });
 app.use(errorMiddleware)
 
 app.listen(PORT, () => {
