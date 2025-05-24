@@ -38,7 +38,7 @@ export const register = catchAsync(async (
 
     res.status(httpStatus.CREATED).json({
       success: true,
-      message: "Signed up successfully",
+      message: "Registered successfully",
     });
     return
 });
@@ -221,7 +221,7 @@ export const logout = (
       secure: process.env.NODE_ENV === "production",
     } as any)
     .status(httpStatus.OK)
-    .json({ success: true, message: "Signed out successfully" });
+    .json({ success: true, message: "Logged out successfully" });
 };
 
 /**
