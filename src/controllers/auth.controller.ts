@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken";
 import httpStatus from "http-status";
 import { OAuth2Client } from "google-auth-library";
 import UserModel from "../models/user.model.ts";
-import cookieConfig from "../configs/cookie.config.ts";
 import catchAsync from "../utils/catchAsync.ts";
 import { generateAuthTokens } from "../services/token.service.ts";
 import { generateResetToken, hashResetToken } from '../utils/passwordReset.ts';
@@ -72,7 +71,7 @@ export const login = catchAsync(async (
   const tokens = await generateAuthTokens(validUser);
 
   res
-    .cookie("refreshToken", tokens.refresh.token, cookieConfig as any)
+    .cookie("refreshToken", tokens.refresh.token, config.cookie as any)
     .status(httpStatus.OK)
     .json({
       success: true,
@@ -113,7 +112,7 @@ export const google = async (
     if (user) {
         const tokens = await generateAuthTokens(user);
       res
-        .cookie("refreshToken", tokens.refresh.token, cookieConfig as any)
+        .cookie("refreshToken", tokens.refresh.token, config.cookie as any)
         .status(httpStatus.OK)
         .json({
           success: true,
@@ -137,7 +136,7 @@ export const google = async (
       const tokens = await generateAuthTokens(result);
 
       res
-        .cookie("refreshToken", tokens.refresh.token, cookieConfig as any)
+        .cookie("refreshToken", tokens.refresh.token, config.cookie as any)
         .status(httpStatus.CREATED)
         .json({
           success: true,
@@ -191,7 +190,7 @@ export const refresh = (
       const tokens = await generateAuthTokens(validUser);
 
       res
-        .cookie("refreshToken", tokens.refresh.token, cookieConfig as any)
+        .cookie("refreshToken", tokens.refresh.token, config.cookie as any)
         .status(httpStatus.OK)
         .json({
           success: true,

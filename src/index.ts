@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cookieParser from "cookie-parser";
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors';
 import morgan from "morgan";
 import helmet from "helmet";
 import dotenv from 'dotenv';
@@ -9,14 +9,13 @@ import compression from 'compression';
 import httpStatus from 'http-status';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import corsOptions from './configs/cors.config.ts';
 import { config } from './configs/config.ts';
 import connectDB from './utils/mongo.ts';
 // import { logger } from './middlewares/logger.ts';
-import errorHandler from './middlewares/errorHandler.ts';
 import authRoutes from './routes/auth.route.ts'
 import userRoutes from './routes/user.route.ts'
 import rateLimit from 'express-rate-limit';
+import errorMiddleware from './middlewares/error.middleware.ts';
 
 dotenv.config({ path: './.env' });
 const { PORT } = process.env;
@@ -31,7 +30,7 @@ app.use(express.json());
 // parse urlencoded request body
 app.use(express.urlencoded({ extended: true }));
 // enable cors
-app.use(cors(corsOptions))
+app.use(cors(config.corsOptions as CorsOptions))
 app.use(cookieParser());
 // set security HTTP headers
 app.use(helmet());
@@ -76,7 +75,7 @@ app.use(`${apiVersion}/user`, userRoutes);
 //         statusCode
 //     });
 // });
-app.use(errorHandler)
+app.use(errorMiddleware)
 
 app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);

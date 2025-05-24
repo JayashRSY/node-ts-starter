@@ -3,20 +3,76 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [
+export interface AppConfig {
+  port: string | number;
+  nodeEnv: string;
+  isProduction: boolean;
+  apiVersion: string;
+  frontendUrl: string;
+  name: string;
+}
+
+export interface MongooseConfig {
+  url: string;
+  options: {
+    useNewUrlParser: boolean;
+    useUnifiedTopology: boolean;
+  };
+}
+
+export interface JwtConfig {
+  secret: string;
+  accessExpirationMinutes: number;
+  refreshExpirationDays: number;
+  resetPasswordExpirationMinutes: number;
+}
+
+export interface CookieConfig {
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite: 'None' | 'Lax' | 'Strict';
+  maxAge: number;
+}
+
+export interface CorsOptions {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => void;
+  methods: string[];
+  allowedHeaders: string[];
+  exposedHeaders: string[];
+  maxAge: number;
+  credentials: boolean;
+  optionsSuccessStatus: number;
+}
+
+export interface EmailConfig {
+  user?: string;
+  smtpKey?: string;
+  defaultFrom: string;
+}
+
+export interface AppFullConfig {
+  app: AppConfig;
+  mongoose: MongooseConfig;
+  jwt: JwtConfig;
+  cookie: CookieConfig;
+  corsOptions: CorsOptions;
+  email: EmailConfig;
+}
+
+export const allowedOrigins: string[] = process.env.ALLOWED_ORIGINS?.split(",") || [
   "http://localhost:3000",
   "http://localhost:4200",
   "http://localhost:5173",
 ];
 
-export const config = {
+export const config: AppFullConfig = {
   app: {
     port: process.env.PORT || 3000,
     nodeEnv: process.env.NODE_ENV || "development",
     isProduction: process.env.NODE_ENV === "production",
     apiVersion: process.env.API_VERSION || '1',
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
-    name: process.env.APP_NAME || 'Node TS Starter',
+    name: process.env.APP_NAME || 'Node Express Server',
   },
   mongoose: {
     url: process.env.MONGODB_URL || "mongodb://localhost:27017/your-database",
@@ -40,11 +96,11 @@ export const config = {
   cookie: {
     httpOnly: true,
     secure: process.env.NODE_ENV !== "production",
-    sameSite: "strict",
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
     maxAge: parseInt(process.env.COOKIE_MAX_AGE || "86400000"), // 24 hours in milliseconds
   },
   corsOptions: {
-    origin: function (origin: any, callback: any) {
+    origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
