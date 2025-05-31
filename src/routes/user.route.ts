@@ -13,7 +13,7 @@ import { createUserValidation, updateUserValidation, getUserValidation, deleteUs
 const router = express.Router();
 
 // router.post('/', validate(createUserValidation), createUser);
-router.get('/', getUsers);
+router.get('/', authenticate, getUsers);
 router.get(
   '/:id',
   validate(getUserValidation),

@@ -47,7 +47,7 @@ export const getUser = catchAsync(async (req: Request, res: Response) => {
     });
   }
 
-  if (req.user?._id !== id) {
+  if (req.user?.sub !== id) {
     return res.status(httpStatus.UNAUTHORIZED).json({
       success: false,
       message: "Unauthorized"
@@ -79,7 +79,7 @@ export const deleteUser = catchAsync(async (req: Request, res: Response) => {
     });
   }
 
-  if (req.user?._id !== id) {
+  if (req.user?.sub !== id) {
     return res.status(httpStatus.UNAUTHORIZED).json({
       success: false,
       message: "Unauthorized"
@@ -111,7 +111,7 @@ export const updateUser = catchAsync(async (req: Request, res: Response) => {
     });
   }
 
-  if (!req.user?._id) {
+  if (!req.user?.sub) {
     return res.status(httpStatus.UNAUTHORIZED).json({
       success: false,
       message: "Unauthorized",
@@ -119,7 +119,7 @@ export const updateUser = catchAsync(async (req: Request, res: Response) => {
   }
 
   const user = await UserModel.findByIdAndUpdate(
-    req.user._id,
+    req.user.sub,
     { name, email, profilePicture, password },
     { new: true }
   ).lean();

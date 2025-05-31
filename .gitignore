@@ -22,3 +22,6 @@ Thumbs.db
 # Other files
 *.swp
 *.swo
+
+# Uploads
+uploads/

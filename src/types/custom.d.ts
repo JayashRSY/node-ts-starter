@@ -10,8 +10,10 @@ declare global {
 }
 
 export interface UserPayload {
-    _id: string;
-    email: string;
-    name: string;
+    sub: string;
     role: string;
+    iat: number;
+    exp: number;
+    jti: string;
+    type: string;
 }
